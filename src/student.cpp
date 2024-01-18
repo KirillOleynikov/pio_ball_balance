@@ -23,8 +23,29 @@ void controllerTick (Overlord &over)
     float motorAngle = over.getMotorTheta ();
     float motorVel = over.getMotorVel ();
 
-    float u = over.getSlider(SliderEnum::prog1)*1.0 / 1000;
-    
+    float w0 = over.getSlider(SliderEnum::prog1) * 1.0 / 1000;
+    float e = w0 - motorVel;
+
+    static float I = 0;
+    static constexpr float Ki = 6.8;
+    static constexpr float Kp = 1;
+
+
+    float u = I + Kp * e; 
+
+    if(-12 < u && u < 12 ||
+        I * e < 0)
+    {
+        float dI = over.getTs() * Ki * e;
+        I = I + dI;
+    }
+
+    u = constrain(u, -12, 12);
+
+    Serial.print(w0);
+    Serial.print(' ');
+    Serial.println(motorVel);
+
     over.setMotorU (u);
 }
  
