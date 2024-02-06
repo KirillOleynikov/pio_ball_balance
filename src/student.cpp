@@ -29,23 +29,27 @@ void controllerTick (Overlord &over)
     static float I = 0;
     static constexpr float Ki = 6.8;
     static constexpr float Kp = 1;
-    static constexpr float K = 0.68;
-    static constexpr float T1 = 0.03;
+    static constexpr float Ts = 0.006;
 
-    
-    float kke = Kk * e;
-    float u = I + kke; 
+    //float u = e * Kp;
+    // float u = I;
+    // float eKi = e * Ki;
+    // float dI = eKi * Ts;
+    // I = I + dI; 
 
-    if(u == constrain(u, -12, 12) ||
-        I * e < 0)
+    float eKp = e * Kp;
+    float u = I + eKp;
+    float umax = 12;
+    float eKi = eKp * Ki;
+    if(u == constrain(u, umax, -umax) ||
+        I * eKi < 0)
     {
-        float dI = over.getTs() * Ki * e;
+        float dI = Ts * Ki;
         I = I + dI;
-        u = e * Kk * (1 + I)
         
-    }
+    }       
 
-    u = constrain(u, -12, 12);
+    u = constrain(u, -umax, umax);
 
     Serial.print(w0);
     Serial.print(' ');
