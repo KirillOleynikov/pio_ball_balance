@@ -27,27 +27,30 @@ void controllerTick (Overlord &over)
     float setPoint = -over.getSetpoint ();
     float carX = -over.getCarX ();
     float carVel = -over.getCarVel ();
-    float motorAngle = over.getMotorTheta (); float setPoint = -over.getSetpoint ();
-    float motorvel = over.getMotorVel
+    float motorAngle = over.getMotorTheta (); 
+    float motorVel = over.getMotorVel();
 
     over.setMotorU(0);
 
-    float w0 = over.getSlider(SliderEnum::prog1) * 1.0 / 1000;
+    float phi0 = over.getSlider(SliderEnum::prog1) * 1.0 / 1000;
+    float K2 = 5.0;
+    float e2 = phi0 - motorAngle;
+    float w0 = e2 * K2;
+    
 
     float e = w0 - motorVel;
 
     static float I = 0;
-    static constexpr float Ki = 4;
-    static constexpr float Kp = 19.84;
+    static constexpr float Ki = 22.187708;
+    static constexpr float Kp = 4.17314815;
     static constexpr float Ts = 0.006;
 
     float eKp = e * Kp;
     float u = I + eKp;
-    float uMax = 12;
+    float umax = 12;
     float eKi = eKp * Ki;
     if(u == constrain(u, umax, -umax) ||
         I * eKi < 0)
-        
     {     
         float dI = Ts * Ki;
         I = I + dI;
@@ -60,9 +63,6 @@ void controllerTick (Overlord &over)
     Serial.print(w0);
     Serial.print(' ');
     Serial.println(motorVel);
-
-    over.setMotorU (u);
-
 }
  
  
