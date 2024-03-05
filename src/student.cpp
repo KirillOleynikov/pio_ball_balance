@@ -24,43 +24,82 @@ void controllerInit (Overlord &over)
  */
 void controllerTick (Overlord &over)
 {
-    float setPoint = -over.getSetpoint ();
-    float carX = -over.getCarX ();
-    float carVel = -over.getCarVel ();
-    float motorAngle = over.getMotorTheta (); 
+//     float setPoint = -over.getSetpoint ();
+//     float carX = -over.getCarX ();
+//     float carVel = -over.getCarVel ();
+//     float motorAngle = over.getMotorTheta (); 
+//     float motorVel = over.getMotorVel();
+
+    float setPoint = -over.getSetpoint();
+    // float carX = -over.getCarX ();
+    // float carVel = -over.getCarVel ();
+    // float motorAngle = over.getMotorTheta (); 
     float motorVel = over.getMotorVel();
 
-    over.setMotorU(0);
-
-    float phi0 = over.getSlider(SliderEnum::prog1) * 1.0 / 1000;
-    float K2 = 5.0;
-    float e2 = phi0 - motorAngle;
-    float w0 = e2 * K2;
-    
-
-    float e = w0 - motorVel;
+    float w0 = over.getSlider(SliderEnum::prog1) * 1.0 / 1000;
 
     static float I = 0;
-    static constexpr float Ki = 22.187708;
-    static constexpr float Kp = 4.17314815;
-    static constexpr float Ts = 0.006;
+    static constexpr float Ki = 6.8;
+    static constexpr float Kp = 1;
+    // static constexpr float Kk = 0.68;
+    static constexpr float Ts = 0.03;
 
+    float e = w0 - motorVel;
     float eKp = e * Kp;
-    float u = I + eKp;
-    float umax = 12;
+    float u = eKp + I;
+    float uMax = 12;
     float eKi = eKp * Ki;
-    if(u == constrain(u, umax, -umax) ||
+
+    if(u == constrain(u, -uMax, uMax) ||
         I * eKi < 0)
-    {     
-        float dI = Ts * Ki;
-        I = I + dI;
-     }     
+    {
+    float dI = over.getTs() * Ki * e;
+    // float dI = eKi * Ts;
+    float I = I + dI;
+        // float dI = over.getTs() * Ki * e;
+        // I = I + dI;
+        // u = e * Kk * (1 + I)
+    }
 
-    u = constrain(u, -umax, umax);
+    u = constrain(u, -12, 12);
 
-    over.setMotorU(u);
+
+    // float phi0 = over.getSlider(SliderEnum::prog1) * 1.0 / 1000;
+    // float K2 = 5.0;
+    // float e2 = phi0 - motorAngle;
+    // float w0 = e2 * K2;
+    
+
+    // float e = w0 - motorVel;
+
+    // static float I = 0;
+    // static constexpr float Ki = 22.187708;
+    // static constexpr float Kp = 4.17314815;
+    // static constexpr float Ts = 0.006;
+
+    // float eKp = e * Kp;
+    // float u = I + eKp;
+    // float umax = 12;
+    // float eKi = eKp * Ki;
+    // if(u == constrain(u, umax, -umax) ||
+    //     I * eKi < 0)
+    // {     
+    //     float dI = Ts * Ki;
+    //     I = I + dI;
+    //  }     
+    //  u = constrain(u, -umax, umax);
+
+    // float e = w0 - w;
+    // float u = I;
+    // float eKi = e * Ki;
+    // float dI = eKi * Ts;
+    // float I = I + dI;
+
+     over.setMotorU(u);
 
     Serial.print(w0);
+    Serial.print(' ');
+    Serial.print(u);
     Serial.print(' ');
     Serial.println(motorVel);
 }
